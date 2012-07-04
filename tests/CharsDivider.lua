@@ -15,6 +15,7 @@ exports['CharsDivider'] = function (test)
   end)
   divider:feed('abc\194')
   divider:feed('\162de')
+  test.equal(i, #chars + 1)
   test.done()
 end
 

@@ -16,12 +16,17 @@ function CharDivider:feed(data)
   local i = 1
   while i <= #buf do
     local charLen = charset.getSeqLen(string.byte(buf, i))
-    if i + charLen >= #buf then
-      self.buf = i + charLen == #buf and nil or string.sub(buf, i)
+    if i + charLen - 1 <= #buf then
+      self:emit('char', string.sub(buf, i, i + charLen - 1))
+      i = i + charLen
+      if i > #buf then
+        self.buf = nil
+        break
+      end
+    else
+      self.buf = string.sub(buf, i)
       break
     end
-    self:emit('char', string.sub(buf, i, i + charLen - 1))
-    i = i + charLen
   end
 end
 
@@ -37,12 +42,18 @@ function CharsDivider:feed(data)
   local i = 1
   while i <= #buf do
     local charLen = charset.getSeqLen(string.byte(buf, i))
-    if i + charLen - 1 > #buf then
+    if i + charLen - 1 <= #buf then
+      i = i + charLen
+      if i > #buf then
+        self:emit('chars', buf)
+        self.buf = nil
+        break
+      end
+    else
       self:emit('chars', string.sub(buf, 1, i - 1))
-      self.buf = i <= #buf and nil or string.sub(buf, i)
+      self.buf = string.sub(buf, i)
       break
     end
-    i = i + charLen
   end
 end
 
